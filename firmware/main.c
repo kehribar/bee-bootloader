@@ -109,11 +109,11 @@ int main(void)
             /* Reset the timeout */
             timeout = 0;
 
-            qw = message_length_UDP();      
+            // qw = message_length_UDP();
             
-            /* parse the message id and send it back as an ack */            
+            /* Parse the message id and send it back as an ack */                      
             t8 = udp_data[1];            
-            sendBroadcast(&t8,1);
+            sendBroadcast(&t8,1);            
 
             prev = curr;
             curr = udp_data[1];
@@ -201,8 +201,9 @@ int main(void)
                     case 3:
                     {
                         /* Make sure the software gets the ACK */
-                        for (t8 = 0; t8 < 32; ++t8)
+                        for (t8 = 0; t8 < 8; ++t8)
                         {
+                            _delay_us(25);
                             t8 = udp_data[1];            
                             sendBroadcast(&t8,1);
                         }                        
@@ -214,6 +215,8 @@ int main(void)
         }    
         else if(timeout++ > 0xFFFE)
         {            
+            /* TODO: Add valid user code detection here */
+            timeout = 0;
             funcptr();            
         }          
     }    
