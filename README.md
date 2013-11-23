@@ -9,5 +9,7 @@ Fits into the 4096 byte bootloader area. Might be possible to slim down to 2048 
 
 Software side is spaghetti code right now, but it's working ok. I'm going to fix it soon.
 
+Work in progres ...
+
 ihsan.
 
