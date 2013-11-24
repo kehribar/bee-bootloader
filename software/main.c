@@ -40,7 +40,7 @@ uint8_t qwe;
 uint32_t err;
 uint32_t count;
 float loss;
-socklen_t len;	
+socklen_t len;  
 
 static void printProgress(float progress);
 static void setProgressData(char* friendly, int step);
@@ -57,7 +57,7 @@ static int use_ansi = 1; // output ansi control character stuff
 /------------------------------------------------------------------------------
 / TODO: In some cases, we might have actually delivered the message but  
 / couldn't get the ACK back. We are counting them as a "failure" as well. Try  
-/	to find if anything can be done without re-inventing the TCP.
+/   to find if anything can be done without re-inventing the TCP.
 /----------------------------------------------------------------------------*/
 int sendMessage(uint8_t msgid,uint8_t* msgbuf,uint8_t msglen);
 /*---------------------------------------------------------------------------*/
@@ -65,47 +65,47 @@ int sendMessage(uint8_t msgid,uint8_t* msgbuf,uint8_t msglen);
 int main(int argc, char**argv)
 {
 	int i;
-    int offset;    
+	int offset;    
 	uint8_t tmsg;
-    int pageNumber;
-    uint16_t trial;
-    uint8_t id = 0;
-    int endAddress = 0;
-    int startAddress = 1;
-    char* fileName = NULL;
+	int pageNumber;
+	uint16_t trial;
+	uint8_t id = 0;
+	int endAddress = 0;
+	int startAddress = 1;
+	char* fileName = NULL;
 
-    /*-----------------------------------------------------------------------*/
+	/*-----------------------------------------------------------------------*/
 	
 	if(argc == 1)
-    {
-        printf("[err]: What is the file name?\n");        
-        return 0;
-    }
-    else if(argc > 2)
-    {
-        printf("[err]: Unneccessary parameters!\n");       
-        return 0;
-    }
+	{
+		printf("[err]: What is the file name?\n");        
+		return 0;
+	}
+	else if(argc > 2)
+	{
+		printf("[err]: Unneccessary parameters!\n");       
+		return 0;
+	}
 	
 	/*-----------------------------------------------------------------------*/
 	
-	fileName = argv[1];	
-    memset(dataBuffer, 0xFF, sizeof(dataBuffer));
-    parseIntelHex(fileName, dataBuffer, &startAddress, &endAddress);
+	fileName = argv[1]; 
+	memset(dataBuffer, 0xFF, sizeof(dataBuffer));
+	parseIntelHex(fileName, dataBuffer, &startAddress, &endAddress);
 
-    if(startAddress != 0)
-    {
-        printf("[err]: You should change the startAddress = 0 assumption\n");
-        return 0;
-    }
+	if(startAddress != 0)
+	{
+		printf("[err]: You should change the startAddress = 0 assumption\n");
+		return 0;
+	}
 
-    if(endAddress > (32768 - 4096))
-    {
-        printf("[err]: Program size is too big!\n");
-        return 0;
-    }    
+	if(endAddress > (32768 - 4096))
+	{
+		printf("[err]: Program size is too big!\n");
+		return 0;
+	}    
 
-    /*-----------------------------------------------------------------------*/
+	/*-----------------------------------------------------------------------*/
 
 	sinlen = sizeof(struct sockaddr_in);
 	memset(&sock_in, 0, sinlen);
@@ -147,7 +147,7 @@ int main(int argc, char**argv)
 	
 	while((sendMessage(id,&tmsg,1) < 0) && (trial < 1000))
 	{
-		trial++;		
+		trial++;        
 	}
 	
 	#if VERBOSE
@@ -165,7 +165,7 @@ int main(int argc, char**argv)
 	printf("> Erasing the memory ...\n");
 	
 	#if VERBOSE
-		printf("[dbg]: Erasing the memory ...\n");	
+		printf("[dbg]: Erasing the memory ...\n");  
 	#endif
 
 	id++;
@@ -174,7 +174,7 @@ int main(int argc, char**argv)
 	
 	while((sendMessage(id,&tmsg,1) < 0) && (trial < 1000))
 	{
-		trial++;		
+		trial++;        
 	}
 	
 	#if VERBOSE
@@ -189,38 +189,38 @@ int main(int argc, char**argv)
 
 	/*-----------------------------------------------------------------------*/
 
-    offset = 0;    
-    pageNumber = 0;
+	offset = 0;    
+	pageNumber = 0;
 
-  	setvbuf( stdout, NULL, _IONBF, 0 );
+	setvbuf( stdout, NULL, _IONBF, 0 );
 
-    while(offset<endAddress)
-    {        
-    	#if VERBOSE
-        	printf("[dbg]: Page number: %d\n",pageNumber);
-        	printf("[dbg]: Page base address: %d\n",offset);
-        #endif
-                       
-        for(i=0;i<PAGE_SIZE;i++)
-        {                        
-            txBuffer[i+1] = dataBuffer[i+offset];
-        }	
+	while(offset<endAddress)
+	{        
+		#if VERBOSE
+			printf("[dbg]: Page number: %d\n",pageNumber);
+			printf("[dbg]: Page base address: %d\n",offset);
+		#endif
+					   
+		for(i=0;i<PAGE_SIZE;i++)
+		{                        
+			txBuffer[i+1] = dataBuffer[i+offset];
+		}   
 
-        printf("> Uploading: %3d\r",((100 * offset) / endAddress));
+		printf("> Uploading: %3d\r",((100 * offset) / endAddress));
 
-        /* Fill the page buffer command */   
-        /* Write the page command */
+		/* Fill the page buffer command */   
+		/* Write the page command */
 		id++;
 		trial = 0;
-		txBuffer[0] = 1;		
+		txBuffer[0] = 1;        
 		txBuffer[129] = (offset >> 0) & 0xFF;
-        txBuffer[130] = (offset >> 8) & 0xFF;
-        txBuffer[131] = (offset >> 16) & 0xFF;       
-        txBuffer[132] = (offset >> 24) & 0xFF;
+		txBuffer[130] = (offset >> 8) & 0xFF;
+		txBuffer[131] = (offset >> 16) & 0xFF;       
+		txBuffer[132] = (offset >> 24) & 0xFF;
 		
 		while((sendMessage(id,txBuffer,133) < 0) && (trial < 1000))
 		{
-			trial++;		
+			trial++;        
 		}
 
 		#if VERBOSE
@@ -232,18 +232,18 @@ int main(int argc, char**argv)
 			printf("[err]: Trial threshold is reached\n");
 			return 0;
 		}
-        
-        pageNumber++;
-        offset += PAGE_SIZE;        
-    }
+		
+		pageNumber++;
+		offset += PAGE_SIZE;        
+	}
 
-    /*-----------------------------------------------------------------------*/
+	/*-----------------------------------------------------------------------*/
 	
 	printf("\n");
 	
 	/* Jump to user code! */
 	#if VERBOSE
-		printf("[dbg]: Jumping to the user code ...\n");	
+		printf("[dbg]: Jumping to the user code ...\n");    
 	#endif
 
 	id++;
