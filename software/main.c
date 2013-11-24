@@ -42,14 +42,6 @@ uint32_t count;
 float loss;
 socklen_t len;  
 
-static void printProgress(float progress);
-static void setProgressData(char* friendly, int step);
-static int progress_step = 0; // current step
-static int progress_total_steps = 0; // total steps for upload
-static char* progress_friendly_name; // name of progress section
-static int dump_progress = 1; // output computer friendly progress info
-static int use_ansi = 1; // output ansi control character stuff
-
 /*-----------------------------------------------------------------------------
 / Send a message over UDP broadcast with a custom packet integrity check.
 /------------------------------------------------------------------------------
@@ -74,6 +66,8 @@ int main(int argc, char**argv)
 	int startAddress = 1;
 	char* fileName = NULL;
 
+	printf("> Computer side software for bee-bootloader\n");        
+	
 	/*-----------------------------------------------------------------------*/
 	
 	if(argc == 1)
@@ -206,7 +200,7 @@ int main(int argc, char**argv)
 			txBuffer[i+1] = dataBuffer[i+offset];
 		}   
 
-		printf("> Uploading: %3d\r",((100 * offset) / endAddress));
+		printf("> Uploading: %c%d\r",'%',((100 * offset) / endAddress));
 
 		/* Fill the page buffer command */   
 		/* Write the page command */
@@ -239,8 +233,9 @@ int main(int argc, char**argv)
 
 	/*-----------------------------------------------------------------------*/
 	
-	printf("\n");
-	
+	printf("\n> Upload is finished!\n");
+	printf("> Jumping to the user code ...\n");
+
 	/* Jump to user code! */
 	#if VERBOSE
 		printf("[dbg]: Jumping to the user code ...\n");    
@@ -266,6 +261,8 @@ int main(int argc, char**argv)
 	}
 
 	/*-----------------------------------------------------------------------*/
+
+	printf("> Job is done! Thanks.\n");
 
 	return 0;
 }
