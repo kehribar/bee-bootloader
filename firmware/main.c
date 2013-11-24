@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <avr/io.h>
+#include <avr/wdt.h>
 #include <avr/boot.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
@@ -33,7 +34,7 @@ static const uint8_t broadcastmac[6] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 #define check_new_UDP_message() ((plen>0) && (buf[IP_PROTO_P]==IP_PROTO_UDP_V))
 #define message_length_UDP() (((buf[UDP_LEN_H_P]<<8) + buf[UDP_LEN_L_P]) - UDP_HEADER_LEN)
 /*---------------------------------------------------------------------------*/
-void sendBroadcast(uint8_t* mbuf, uint8_t len)
+static void sendBroadcast(uint8_t* mbuf, uint8_t len)
 {
     uint8_t xc = 0;
 
@@ -75,6 +76,7 @@ int main(void)
     uint32_t t32;
     uint8_t prev;
     uint8_t curr;
+    uint8_t* pbuf;
     uint16_t plen;
     uint32_t pageNum;
     uint16_t timeout;
@@ -83,7 +85,10 @@ int main(void)
     uint8_t isDuplicate;
     uint8_t* udp_data = buf + UDP_DATA_P;
 
-    init_serial();    
+    wdt_reset();
+    wdt_enable(WDTO_8S);    
+
+    init_serial();
     init_mac(mymac);      
     init_udp_or_www_server(mymac,myip);             
 
@@ -94,8 +99,11 @@ int main(void)
     /* main loop */
     while(1)
     {    
+        /* kick the dog ... */
+        wdt_reset();
+
         /* poll hardware ethernet buffer */
-        plen = enc28j60PacketReceive(BUFFER_SIZE,buf);     
+        plen = enc28j60PacketReceive(BUFFER_SIZE,buf);
 
         /*---------------------------------------------------------------------
         / Packet structure:
@@ -108,8 +116,6 @@ int main(void)
         {
             /* Reset the timeout */
             timeout = 0;
-
-            // qw = message_length_UDP();
             
             /* Parse the message id and send it back as an ack */                      
             t8 = udp_data[1];            
@@ -184,7 +190,7 @@ int main(void)
                         t32 = t32 << 24;
                         pageNum += t32;
 
-                        boot_program_page(pageNum,pageBuf);  
+                        boot_program_page(pageNum,pageBuf);                       
                         break;
                     }                    
                     /* delete user application */
@@ -201,12 +207,13 @@ int main(void)
                     case 3:
                     {
                         /* Make sure the software gets the ACK */
-                        for (t8 = 0; t8 < 8; ++t8)
-                        {
-                            _delay_us(25);
-                            t8 = udp_data[1];            
-                            sendBroadcast(&t8,1);
-                        }                        
+                        for (t8 = 0; t8 < 32; ++t8)
+                        {                            
+                            sendBroadcast(udp_data,1);
+                            _delay_ms(1);
+                        }             
+                        MCUSR &= ~(1 << WDRF);
+                        wdt_disable();
                         funcptr();
                         break;
                     }                    
@@ -217,7 +224,9 @@ int main(void)
         {            
             /* TODO: Add valid user code detection here */
             timeout = 0;
-            funcptr();            
+            MCUSR &= ~(1 << WDRF);
+            wdt_disable();
+            funcptr();
         }          
     }    
 
