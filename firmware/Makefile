@@ -23,16 +23,10 @@ PORT 	= /dev/tty.usbserial-A900cbrd
 AVRDUDE = avrdude -c usbtiny -p ${DEVICE} -U flash:w:$(PROJECT).hex -B 1
 RESET   = avrdude -c usbtiny -p ${DEVICE}
 
-# avrdude -c usbtiny -p m328p -U lfuse:w:0xff:m -U hfuse:w:0xde:m -U efuse:w:0x05:m
-# 32768 - 512  = 32256 => 0x7E00
-
-# avrdude -c usbtiny -p m328p -U lfuse:w:0xff:m -U hfuse:w:0xda:m -U efuse:w:0xfd:m
-# 32768 - 2048 = 30720 => 0x7800
-
 # WE ARE USING THE FOLLOWING SETTINGS
-# avrdude -c usbtiny -p m328p -U lfuse:w:0xff:m -U hfuse:w:0xd8:m -U efuse:w:0xfd:m
-# 32768 - 4096 = 28672 => 0x7000
+# avrdude -c usbtiny -p m328p -U lfuse:w:0xe2:m -U hfuse:w:0xd8:m -U efuse:w:0xff:m
 
+# 32768 - 4096 = 28672 => 0x7000
 BOOTSTART = 0x7000
 
 ###############################################################################
