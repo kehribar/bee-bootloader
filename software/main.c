@@ -51,7 +51,7 @@ socklen_t len;
 / couldn't get the ACK back. We are counting them as a "failure" as well. Try  
 /   to find if anything can be done without re-inventing the TCP.
 /----------------------------------------------------------------------------*/
-int sendMessage(uint8_t msgid,uint8_t* msgbuf,uint8_t msglen);
+int sendMessage(uint8_t msgid,uint8_t* msgbuf,uint8_t msglen, uint32_t maxTrial);
 /*---------------------------------------------------------------------------*/
 
 int main(int argc, char**argv)
@@ -118,7 +118,7 @@ int main(int argc, char**argv)
 	sock_in.sin_addr.s_addr=htonl(-1); 
 
 	/* port number */
-	sock_in.sin_port = htons(25600);
+	sock_in.sin_port = htons(55555);
 	sock_in.sin_family = PF_INET;
 
 	sockfd = socket(AF_INET,SOCK_DGRAM,0);
@@ -129,20 +129,26 @@ int main(int argc, char**argv)
 	bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
 	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
-	/*-----------------------------------------------------------------------*/
-
-	#if VERBOSE
-		printf("[dbg]: Dummy ping to initialize the msgid\n");
-	#endif
-
+	/*-----------------------------------------------------------------------*/	
+	
+	printf("> Trying to reset the device\n");	
+	
 	id++;
 	trial = 0;
 	tmsg = 0;
-	
-	while((sendMessage(id,&tmsg,1) < 0) && (trial < 1000))
+
+	do
 	{
 		trial++;        
+
+		/* magic words */
+		udpBuffer[0] = 0x55;
+		udpBuffer[1] = 0xAA;
+
+		/* send the reset message */
+		sendto(sock, udpBuffer, 2, 0, (struct sockaddr *)&sock_in, sinlen);
 	}
+	while((sendMessage(id,&tmsg,1,50000) < 0) && (trial < 1000));
 	
 	#if VERBOSE
 		printf("[dbg]: Trial count: %d\n",trial);
@@ -166,7 +172,7 @@ int main(int argc, char**argv)
 	trial = 0;
 	tmsg = 2;
 	
-	while((sendMessage(id,&tmsg,1) < 0) && (trial < 1000))
+	while((sendMessage(id,&tmsg,1,500000) < 0) && (trial < 1000))
 	{
 		trial++;        
 	}
@@ -212,7 +218,7 @@ int main(int argc, char**argv)
 		txBuffer[131] = (offset >> 16) & 0xFF;       
 		txBuffer[132] = (offset >> 24) & 0xFF;
 		
-		while((sendMessage(id,txBuffer,133) < 0) && (trial < 1000))
+		while((sendMessage(id,txBuffer,133,500000) < 0) && (trial < 1000))
 		{
 			trial++;        
 		}
@@ -245,7 +251,7 @@ int main(int argc, char**argv)
 	trial = 0;
 	txBuffer[0] = 3;
 
-	while((sendMessage(id,txBuffer,1) < 0) && (trial < 1000))
+	while((sendMessage(id,txBuffer,1,500000) < 0) && (trial < 1000))
 	{
 		trial++;
 	}
@@ -267,7 +273,7 @@ int main(int argc, char**argv)
 	return 0;
 }
 /*-----------------------------------------------------------------------------------------------*/
-int sendMessage(uint8_t msgid,uint8_t* msgbuf,uint8_t msglen)
+int sendMessage(uint8_t msgid,uint8_t* msgbuf,uint8_t msglen,uint32_t maxTrial)
 {
 	uint8_t i;
 	uint32_t r_trial = 0;
@@ -293,13 +299,13 @@ int sendMessage(uint8_t msgid,uint8_t* msgbuf,uint8_t msglen)
 	r_trial = 0;
 
 	/* try to get the ACK */
-	while((recvfrom(sockfd,mesg,1000,0,(struct sockaddr *)&cliaddr,&len) <= 0) && (r_trial < 100000))
+	while((recvfrom(sockfd,mesg,1000,0,(struct sockaddr *)&cliaddr,&len) <= 0) && (r_trial < maxTrial))
 	{
 		r_trial++;
 	}
 
 	/* check the result */
-	if((mesg[0] != msgid)||(r_trial >= 100000))
+	if((mesg[0] != msgid)||(r_trial >= maxTrial))
 	{
 		/* error! */
 		return -1;
