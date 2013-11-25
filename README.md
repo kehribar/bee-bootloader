@@ -1,5 +1,6 @@
-bee-bootloader
-==============
+
+
+##UDP bootloader for Atmega328p + ENC28J60
 
 ENC28j60 based atmega328p bootloader.
 
@@ -7,9 +8,11 @@ Uses UDP broadcast messages, therefore there is no need for static IP configurat
 
 Fits into the 4096 byte bootloader area. Might be possible to slim down to 2048 byte.
 
-Software side is spaghetti code right now, but it's working ok. I'm going to fix it soon.
+This bootloader is developed on that hardware: <http://kehribar.me/hardware/ethernetGateway>
 
-Work in progres ...
+Currently works OK but there might be some rough edges.
+
+Comments and issue reports are welcome!
 
 ihsan.
 
