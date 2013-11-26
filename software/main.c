@@ -24,6 +24,7 @@
 /*---------------------------------------------------------------------------*/
 #define PAGE_SIZE 128
 #define VERBOSE 0
+#define TIMEOUT 15000
 /*---------------------------------------------------------------------------*/
 int yes = 1;
 int sock, sockfd, n;
@@ -148,7 +149,7 @@ int main(int argc, char**argv)
 		/* send the reset message */
 		sendto(sock, udpBuffer, 2, 0, (struct sockaddr *)&sock_in, sinlen);
 	}
-	while((sendMessage(id,&tmsg,1,50000) < 0) && (trial < 1000));
+	while((sendMessage(id,&tmsg,1,TIMEOUT) < 0) && (trial < 1000));
 	
 	#if VERBOSE
 		printf("[dbg]: Trial count: %d\n",trial);
@@ -172,7 +173,7 @@ int main(int argc, char**argv)
 	trial = 0;
 	tmsg = 2;
 	
-	while((sendMessage(id,&tmsg,1,50000) < 0) && (trial < 1000))
+	while((sendMessage(id,&tmsg,1,TIMEOUT) < 0) && (trial < 1000))
 	{
 		trial++;        
 	}
@@ -218,7 +219,7 @@ int main(int argc, char**argv)
 		txBuffer[131] = (offset >> 16) & 0xFF;       
 		txBuffer[132] = (offset >> 24) & 0xFF;
 		
-		while((sendMessage(id,txBuffer,133,50000) < 0) && (trial < 1000))
+		while((sendMessage(id,txBuffer,133,TIMEOUT) < 0) && (trial < 1000))
 		{
 			trial++;        
 		}
@@ -251,7 +252,7 @@ int main(int argc, char**argv)
 	trial = 0;
 	txBuffer[0] = 3;
 
-	while((sendMessage(id,txBuffer,1,50000) < 0) && (trial < 1000))
+	while((sendMessage(id,txBuffer,1,TIMEOUT) < 0) && (trial < 1000))
 	{
 		trial++;
 	}
