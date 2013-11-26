@@ -172,7 +172,7 @@ int main(int argc, char**argv)
 	trial = 0;
 	tmsg = 2;
 	
-	while((sendMessage(id,&tmsg,1,500000) < 0) && (trial < 1000))
+	while((sendMessage(id,&tmsg,1,50000) < 0) && (trial < 1000))
 	{
 		trial++;        
 	}
@@ -218,7 +218,7 @@ int main(int argc, char**argv)
 		txBuffer[131] = (offset >> 16) & 0xFF;       
 		txBuffer[132] = (offset >> 24) & 0xFF;
 		
-		while((sendMessage(id,txBuffer,133,500000) < 0) && (trial < 1000))
+		while((sendMessage(id,txBuffer,133,50000) < 0) && (trial < 1000))
 		{
 			trial++;        
 		}
@@ -251,7 +251,7 @@ int main(int argc, char**argv)
 	trial = 0;
 	txBuffer[0] = 3;
 
-	while((sendMessage(id,txBuffer,1,500000) < 0) && (trial < 1000))
+	while((sendMessage(id,txBuffer,1,50000) < 0) && (trial < 1000))
 	{
 		trial++;
 	}
